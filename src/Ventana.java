@@ -19,6 +19,7 @@ public class Ventana extends JFrame {
         setBounds(750, 300, 600, 500);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
+        textFieldPath.setText("C:\\Users\\Sigrid\\Desktop\\FotoNumer");
 
         //LISTENERS
         textFieldNumber.addKeyListener(new KeyAdapter() {
