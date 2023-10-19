@@ -2,6 +2,12 @@ import javax.swing.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
+import java.util.Comparator;
 
 public class Ventana extends JFrame {
     private JPanel panelMain;
@@ -19,7 +25,7 @@ public class Ventana extends JFrame {
         setBounds(750, 300, 600, 500);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
-        textFieldPath.setText("C:\\Users\\Sigrid\\Desktop\\FotoNumer");
+        textFieldPath.setText(System.getProperty("user.home") + "/Desktop/FotoNumer");
 
         //LISTENERS
         textFieldNumber.addKeyListener(new KeyAdapter() {
@@ -45,20 +51,43 @@ public class Ventana extends JFrame {
 
                 int number = Integer.parseInt(textFieldNumber.getText());
                 File[] files = directory.listFiles();
-                if (files != null)
-                    for (File file : files)
+                if (files != null) {
+                    // Sort the files by creation date
+                    Arrays.sort(files, new Comparator<File>() {
+                        @Override
+                        public int compare(File file1, File file2) {
+                            return Long.compare(getCreationTime(file1), getCreationTime(file2));
+                        }
+                    });
+
+                    for (File file : files) {
                         if (file.isFile()) {
                             String newFileName = number++ + getFileExtension(file.getName());
                             File newFile = new File(directory, newFileName);
-                            if (file.renameTo(newFile))
+                            if (file.renameTo(newFile)) {
                                 textAreaConsole.append("\nRenamed: " + file.getName() + " to " + newFileName);
-                            else
+                            } else {
                                 textAreaConsole.append("\nFailed to rename: " + file.getName());
+                            }
                         }
-                textAreaConsole.append("\nDONE!");
+                    }
+                    textAreaConsole.append("\nDONE!");
+                }
             }
         });
 
+    }
+
+    // Helper method to get the creation time of a file
+    private long getCreationTime(File file) {
+        Path path = file.toPath();
+        try {
+            BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
+            return attributes.creationTime().toMillis();
+        } catch (IOException e) {
+            // Handle the exception as needed
+            return 0L; // Default value
+        }
     }
 
     private static String getFileExtension(String fileName) {
@@ -69,3 +98,6 @@ public class Ventana extends JFrame {
         return "";
     }
 }
+
+
+
